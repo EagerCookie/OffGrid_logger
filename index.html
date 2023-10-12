@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Display</title>
+    <style>
+        /* Add CSS styles for your interface here */
+        .body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        .value {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+		.invertor{
+			color: black;
+			}
+		.bms{
+			color:black;	
+		}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="value invertor" id="Power_VA">Power VA: Loading...</div>
+        <div class="value invertor" id="Power_W">Power W: Loading...</div>
+        <div class="value invertor" id="OutP_percentage">Output Percentage: Loading...</div>
+        <div class="value invertor" id="BusVoltage">Bus Voltage: Loading...</div>
+        <div class="value invertor" id="BatteryVoltage">Battery Voltage: Loading...</div>
+        <div class="value invertor" id="BattCharge">Battery Charge: Loading...</div>
+        <div class="value invertor" id="BattCapacity">Battery Capacity: Loading...</div>
+        <div class="value invertor" id="HeatsikTemp">Heatsink Temperature: Loading...</div>
+        <div class="value invertor" id="PVBattCharge">PV Battery Charge: Loading...</div>
+        <div class="value invertor" id="PV_Voltage">PV Voltage: Loading...</div>
+        <div class="value invertor" id="SCC_Bat">SCC Battery: Loading...</div>
+        <div class="value invertor" id="BattDischarge">Battery Discharge: Loading...</div>
+        <div class="value invertor" id="PV_W">PV W: Loading...</div>
+        <div class="value bms" id="Batt_V">Batt V: Loading...</div>
+        <div class="value bms" id="Batt_A">Batt A: Loading...</div>
+    </div>
+
+    <script>
+		const reader = new FileReader();
+		
+		//const socket = new WebSocket('ws://'+window.location.hostname+':81/');
+		const socket = new WebSocket('ws://192.168.1.66:81/');
+		
+		function fadeEffect(className, color ){
+			var elements = document.getElementsByClassName(className);
+			for(const element of elements){
+				element.style.color=color;
+			}
+		}
+		
+        // Function to make the HTTP GET request and update the values
+        function fetchInvertorData(rawData) {
+            try {
+                const values = rawData.split(' ');
+
+                // Set values based on your statements
+                document.getElementById('Power_VA').textContent = `Power VA: ${Number(values[4])} W`;
+                document.getElementById('Power_W').textContent = `Power W: ${Number(values[5])} W`;
+                document.getElementById('OutP_percentage').textContent = `Output Percentage: ${Number(values[6])} %`;
+                document.getElementById('BusVoltage').textContent = `Bus Voltage: ${Number(values[7])} V`;
+                document.getElementById('BatteryVoltage').textContent = `Battery Voltage: ${parseFloat(values[8])} V`;
+                document.getElementById('BattCharge').textContent = `Battery Charge: ${Number(values[9])} A`;
+                document.getElementById('BattCapacity').textContent = `Battery Capacity: ${Number(values[10])} %`;
+                document.getElementById('HeatsikTemp').textContent = `Heatsink Temperature: ${Number(values[11])} C`;
+                document.getElementById('PVBattCharge').textContent = `PV Battery Charge: ${Number(values[12])} A`;
+                document.getElementById('PV_Voltage').textContent = `PV Voltage: ${parseFloat(values[13])} V`;
+                document.getElementById('SCC_Bat').textContent = `SCC Battery: ${parseFloat(values[14])}`;
+                document.getElementById('BattDischarge').textContent = `Battery Discharge: ${Number(values[15])} A`;
+                document.getElementById('PV_W').textContent = `PV W: ${Number(values[19])} W`;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+			clearTimeout(invertorTimeout);
+			fadeEffect("invertor", "black");
+			let invertorTimeout = setTimeout(fadeEffect, 5300, "invertor", "red");
+        }
+
+        function fetchBMSData(rawData) {
+            try {
+                reader.readAsArrayBuffer(rawData);
+				reader.onload = function(event) {
+					const arrayBuffer = event.target.result;
+					const uint8Array = new Uint8Array(arrayBuffer);
+					var Batt_v = (uint8Array[45]<<8|uint8Array[46])/100; 	
+					var Batt_A = ((uint8Array[48]&0X7F)<<8|uint8Array[49])/100;
+					//data = ((received_data[59])<<8)|(received_data[60])
+					var is_charging=1;
+					if(uint8Array[48]>>7=="1"){
+						is_charging =1;
+					}
+					else if (uint8Array[48]>>7=="0"){
+							is_charging =-1;
+					}
+					Batt_A*=is_charging;
+					
+					document.getElementById('Batt_V').textContent = `Battery V: ${Batt_v} V`;
+					document.getElementById('Batt_A').textContent = `Battery A: ${Batt_A} A`;
+				}
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+			clearTimeout(bmsTimeout);
+			fadeEffect("bms", "black");
+			let bmsTimeout = setTimeout(fadeEffect, 3300, "bms", "red");
+        }
+		
+		socket.addEventListener('message', (event) => {
+		var data = event.data;
+		
+		if(typeof data == 'string'){
+			fetchInvertorData(data);
+			}
+		else{
+				fetchBMSData(data);
+		}})
+		
+	</script>
+</body>
+</html>
