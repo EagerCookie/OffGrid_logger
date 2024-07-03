@@ -15,6 +15,9 @@ So websockets is solution for such type of problem.
 - Use hardware UART connection for BMS (115200 baud) and software for inverter (2700 baud)
 Software UART has limitation
 
+Also there is a possibility to log into Google Sheets using "Google Scripts"
+
+--------------------------------------------------------------------------
 TODO:
 General:
 -Upload Google AppsScript script file
@@ -26,6 +29,7 @@ Software:
 - Make initialization procedure(Start SoftAP, input wifi credentials etc.)
 - Save configuration into EEPROM
 - Make sure that disconnection any of equipment doesn't lead to stucking in the loop waiting for the response
+- Maybe shoud use native library insdie Google Script to connect Google Sheets 
   
 
 Hardware:
