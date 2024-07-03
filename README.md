@@ -29,7 +29,8 @@ Software:
 - Make initialization procedure(Start SoftAP, input wifi credentials etc.)
 - Save configuration into EEPROM
 - Make sure that disconnection any of equipment doesn't lead to stucking in the loop waiting for the response
-- Maybe shoud use native library insdie Google Script to connect Google Sheets 
+- Maybe shoud use native library insdie Google Script to connect Google Sheets
+- Google Sheet ahs a limit of pages count, so old sheets should be deleted to avoid unexpected errors while saving data
   
 
 Hardware:
